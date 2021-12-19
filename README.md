@@ -1,6 +1,6 @@
 # Share
 
-Share links with Laravel 5
+Share links with Laravel 8
 
 This is a fork to John's share for Laravel 4. 
  
@@ -12,7 +12,6 @@ This is a fork to John's share for Laravel 4.
 - Evernote : evernote
 - Facebook : facebook
 - Gmail : gmail
-- Google Plus : gplus
 - LinkedIn : linkedin
 - Pinterest : pinterest
 - Reddit : reddit
@@ -32,12 +31,12 @@ Step 1 : Install Composer dependency
 
 Step 2 : Register the Service Provider
 
-Add *Chencha\Share\ShareServiceProvider* to providers array in *config/app.php*
+Add *Siberfx\Share\ShareServiceProvider* to providers array in *config/app.php*
 
 Step 3 : Register Alias
 
 
-Add *Share* => *Chencha\Share\ShareFacade* to aliases array in *config/app.php*
+Add *Share* => *Siberfx\Share\ShareFacade* to aliases array in *config/app.php*
 
 
 ## Usage
@@ -83,7 +82,7 @@ Returns an array of results for all defined services.
 
 Publish the package config:
 
-    php artisan vendor:publish --provider='Chencha\Share\ShareServiceProvider'
+    php artisan vendor:publish --provider='Siberfx\Share\ShareServiceProvider'
 
 Add a new service in config/social-share.php:
 

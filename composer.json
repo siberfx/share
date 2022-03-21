@@ -31,7 +31,7 @@
         "Siberfx\\Share\\ShareServiceProvider"
       ],
       "aliases": {
-        "Share": "Siberfx\\Share\\ShareFacade"
+        "Share": "Siberfx\\Share\\Facade\\Share"
       }
     }
   },

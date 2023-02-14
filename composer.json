@@ -3,7 +3,9 @@
   "description": "Share links with Laravel 8",
   "keywords": [
     "share",
-    "laravel8"
+    "laravel8",
+    "laravel9",
+    "laravel10"
   ],
   "version": "1.0.0",
   "license": "MIT",
@@ -14,8 +16,8 @@
     }
   ],
   "require": {
-    "php": "^7.3|8.*",
-    "illuminate/support": "^9|^8"
+    "php": "^7.3|^8.1|^8.2",
+    "illuminate/support": "^10|^9|^8"
   },
   "autoload": {
     "psr-0": {

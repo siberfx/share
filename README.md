@@ -1,6 +1,6 @@
 # Share
 
-Share links with Laravel 8
+Share links with Laravel 8, 9, 10
 
 This is a fork to John's share for Laravel 4. 
  

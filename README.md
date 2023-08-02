@@ -27,7 +27,7 @@ This is a fork to John's share for Laravel 4.
 
 Step 1 : Install Composer dependency
 
-    composer require chencha/share
+    composer require siberfx/share
 
 Step 2 : Register the Service Provider
 

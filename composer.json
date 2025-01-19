@@ -15,20 +15,12 @@
   ],
   "require": {
     "php": "^8.2",
-    "illuminate/support": "^11|^10"
-  },
-  "require-dev": {
-    "orchestra/testbench": "~3.0",
-    "mockery/mockery": "^0.9.4",
-    "guzzlehttp/guzzle": ">=7.0"
+    "illuminate/support": "^10|^11"
   },
   "autoload": {
     "psr-0": {
       "Siberfx\\Share": "src/"
-    },
-    "classmap": [
-        "tests/TestCase.php"
-    ]
+    }
   },
   "extra": {
     "laravel": {

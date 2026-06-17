@@ -1,8 +1,8 @@
 # Share
 
-Share links with Laravel 8, 9, 10
+Share links with Laravel 12 & 13 (PHP 8.4+).
 
-This is a fork to John's share for Laravel 4. 
+This is a fork of John's share for Laravel 4. 
  
 ## Services available
 
@@ -25,18 +25,13 @@ This is a fork to John's share for Laravel 4.
 
 ## Installation
 
-Step 1 : Install Composer dependency
+Install the Composer dependency:
 
     composer require siberfx/share
 
-Step 2 : Register the Service Provider
-
-Add *Siberfx\Share\ShareServiceProvider* to providers array in *config/app.php*
-
-Step 3 : Register Alias
-
-
-Add *Share* => *Siberfx\Share\ShareFacade* to aliases array in *config/app.php*
+The service provider (*Siberfx\Share\ShareServiceProvider*) and the *Share*
+facade (*Siberfx\Share\Facade\Share*) are auto-registered via Laravel package
+discovery — no manual registration required.
 
 
 ## Usage

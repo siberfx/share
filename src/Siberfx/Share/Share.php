@@ -1,6 +1,7 @@
 <?php namespace Siberfx\Share;
 
-use View;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\View;
 
 class Share {
     protected $app;
@@ -68,7 +69,7 @@ class Share {
             $vars[$varName] = $this->$varName;
         }
 
-        $view = \Arr::get($vars['service'], 'view', 'social-share::default');
+        $view = Arr::get($vars['service'], 'view', 'social-share::default');
         return trim(View::make($view, $vars)->render());
     }
 

@@ -1,10 +1,12 @@
 {
   "name": "siberfx/share",
-  "description": "Share links with Laravel 10+",
+  "description": "Share links with Laravel 12 & 13",
   "keywords": [
     "share",
-    "laravel10",
-    "laravel11"
+    "social",
+    "laravel",
+    "laravel12",
+    "laravel13"
   ],
   "license": "MIT",
   "authors": [
@@ -15,19 +17,23 @@
   ],
   "require": {
     "php": "^8.4",
-    "illuminate/support": "^13|^12|^11|^10"
+    "illuminate/support": "^12.0|^13.0",
+    "illuminate/view": "^12.0|^13.0"
   },
   "require-dev": {
-    "orchestra/testbench": "~3.0",
-    "mockery/mockery": "^0.9.4",
-    "guzzlehttp/guzzle": ">=7.0"
+    "orchestra/testbench": "^10.0|^11.0",
+    "phpunit/phpunit": "^11.5|^12.0",
+    "mockery/mockery": "^1.6",
+    "guzzlehttp/guzzle": "^7.8"
   },
   "autoload": {
-    "psr-0": {
-      "Siberfx\\Share": "src/"
-    },
+    "psr-4": {
+      "Siberfx\\Share\\": "src/Siberfx/Share/"
+    }
+  },
+  "autoload-dev": {
     "classmap": [
-        "tests/TestCase.php"
+      "tests/TestCase.php"
     ]
   },
   "extra": {
@@ -40,5 +46,6 @@
       }
     }
   },
-  "minimum-stability": "stable"
+  "minimum-stability": "stable",
+  "prefer-stable": true
 }

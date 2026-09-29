@@ -6,6 +6,11 @@
     "social",
     "social-share",
     "share-links",
+    "share-buttons",
+    "font-awesome",
+    "line-awesome",
+    "bootstrap-icons",
+    "tailwind",
     "laravel",
     "laravel12",
     "laravel13"

@@ -7,6 +7,8 @@ namespace Siberfx\Share;
 use BadMethodCallException;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\HtmlString;
+use InvalidArgumentException;
 
 class Share
 {
@@ -14,6 +16,11 @@ class Share
      * Variables a service may expose to its URL via the `only` option.
      */
     protected const array SHAREABLE = ['url', 'title', 'media'];
+
+    /**
+     * Button themes shipped with the package.
+     */
+    public const array THEMES = ['bootstrap', 'tailwind', 'plain'];
 
     protected string $url = '';
 
@@ -83,7 +90,7 @@ class Share
      *
      * @throws BadMethodCallException when the service is not configured.
      */
-    public function generateUrl(string $serviceId): string
+    public function generateUrl(string $serviceId, ?string $separator = null): string
     {
         if (! $this->has($serviceId)) {
             throw new BadMethodCallException(sprintf(
@@ -92,7 +99,7 @@ class Share
         }
 
         $service = $this->config("social-share.services.$serviceId");
-        $separator = (string) $this->config('social-share.separator', '&');
+        $separator ??= (string) $this->config('social-share.separator', '&');
 
         $only = empty($service['only'])
             ? self::SHAREABLE
@@ -148,6 +155,115 @@ class Share
         $glue = ! str_contains($uri, '?') ? '?' : (str_ends_with($uri, '?') ? '' : $separator);
 
         return $uri.$glue.$query;
+    }
+
+    /**
+     * Render share buttons with icons from the given icon set and theme.
+     *
+     * @param  array<int, string>|string|null  $services  null renders every configured service
+     * @param  string|null  $iconSet  fontawesome, lineawesome, bootstrap-icons or a custom set
+     * @param  string|null  $theme  bootstrap, tailwind, plain or a custom view name
+     */
+    public function render(
+        array|string|null $services = null,
+        ?string $iconSet = null,
+        ?string $theme = null,
+        bool $labels = false,
+    ): HtmlString {
+        $theme ??= (string) $this->config('social-share.theme', 'bootstrap');
+        $view = in_array($theme, self::THEMES, true) ? "social-share::buttons.$theme" : $theme;
+
+        return new HtmlString(trim(View::make($view, [
+            'buttons' => $this->buttons($services, $iconSet),
+            'labels' => $labels,
+        ])->render()));
+    }
+
+    /**
+     * Describe share buttons (link, label and icon) without rendering markup.
+     *
+     * @param  array<int, string>|string|null  $services
+     * @return array<string, array{service: string, label: string, url: string, icon: string, external: bool}>
+     */
+    public function buttons(array|string|null $services = null, ?string $iconSet = null): array
+    {
+        $services = $services === null
+            ? array_keys($this->config('social-share.services', []))
+            : (array) $services;
+
+        $set = $this->iconSet($iconSet);
+
+        $buttons = [];
+        foreach ($services as $service) {
+            // Blade escapes the href, so links are generated with a raw '&'.
+            $url = $this->generateUrl($service, '&');
+
+            $buttons[$service] = [
+                'service' => $service,
+                'label' => (string) ($this->config("social-share.services.$service.label") ?? ucfirst($service)),
+                'url' => $url,
+                'icon' => $set['icons'][$service] ?? $set['fallback'] ?? '',
+                'external' => ! preg_match('/^(mailto|whatsapp|sms|tel):/i', $url),
+            ];
+        }
+
+        return $buttons;
+    }
+
+    /**
+     * Get the icon CSS classes for a service in the given icon set.
+     */
+    public function icon(string $service, ?string $iconSet = null): string
+    {
+        $set = $this->iconSet($iconSet);
+
+        return (string) ($set['icons'][$service] ?? $set['fallback'] ?? '');
+    }
+
+    /**
+     * Get the <link> tag that loads an icon set's stylesheet.
+     */
+    public function styles(?string $iconSet = null): HtmlString
+    {
+        $set = $this->iconSet($iconSet);
+
+        if (empty($set['stylesheet'])) {
+            return new HtmlString('');
+        }
+
+        $attributes = ['rel' => 'stylesheet', 'href' => $set['stylesheet']];
+
+        if (! empty($set['integrity'])) {
+            $attributes += ['integrity' => $set['integrity'], 'crossorigin' => 'anonymous', 'referrerpolicy' => 'no-referrer'];
+        }
+
+        $html = '';
+        foreach ($attributes as $name => $value) {
+            $html .= sprintf(' %s="%s"', $name, e($value));
+        }
+
+        return new HtmlString("<link$html>");
+    }
+
+    /**
+     * Resolve an icon set definition from config.
+     *
+     * @return array{stylesheet?: string, integrity?: string, fallback?: string, icons: array<string, string>}
+     *
+     * @throws InvalidArgumentException when the icon set is not configured.
+     */
+    protected function iconSet(?string $name): array
+    {
+        $name ??= (string) $this->config('social-share.icons.default', 'fontawesome');
+        $set = $this->config("social-share.icons.sets.$name");
+
+        if (! is_array($set)) {
+            throw new InvalidArgumentException(sprintf(
+                'Icon set [%s] is not defined in the social-share.icons.sets config.', $name
+            ));
+        }
+
+        return $set + ['icons' => []];
     }
 
     protected function config(string $key, mixed $default = null): mixed

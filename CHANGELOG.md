@@ -6,6 +6,14 @@ to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Share buttons with icons: `Share::render()`, the `<x-social-share::buttons>` component,
+  and `bootstrap`, `tailwind` and `plain` themes (or any custom view).
+- Icon sets: Font Awesome 7.3.1, Line Awesome 1.3.0 and Bootstrap Icons 1.13.1. Each has a
+  per-service icon map and a generic fallback, and can be overridden or extended in config.
+- `Share::styles()` / `<x-social-share::styles>` print a pinned CDN `<link>` with an SRI hash.
+- `Share::buttons()` (button data without markup) and `Share::icon()`.
+- Human-readable `label` for every built-in service.
+- `generateUrl()` accepts an optional separator override.
 - PHP 8.5 support (`"php": "^8.4|^8.5"`), verified against Laravel 12 and 13.
 - New services: `x` (x.com), `bluesky` and `threads`.
 - `Share::has($service)` to check whether a service is configured.

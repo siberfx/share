@@ -1,9 +1,11 @@
 {
   "name": "siberfx/share",
-  "description": "Share links with Laravel 12 & 13",
+  "description": "Generate social share links (X, Facebook, LinkedIn, WhatsApp, Bluesky, email and more) for Laravel 12 & 13",
   "keywords": [
     "share",
     "social",
+    "social-share",
+    "share-links",
     "laravel",
     "laravel12",
     "laravel13"
@@ -16,15 +18,14 @@
     }
   ],
   "require": {
-    "php": "^8.4",
+    "php": "^8.4|^8.5",
     "illuminate/support": "^12.0|^13.0",
     "illuminate/view": "^12.0|^13.0"
   },
   "require-dev": {
-    "orchestra/testbench": "^10.0|^11.0",
-    "phpunit/phpunit": "^11.5|^12.0",
     "mockery/mockery": "^1.6",
-    "guzzlehttp/guzzle": "^7.8"
+    "orchestra/testbench": "^10.0|^11.0",
+    "phpunit/phpunit": "^11.5|^12.0"
   },
   "autoload": {
     "psr-4": {
@@ -36,6 +37,9 @@
       "tests/TestCase.php"
     ]
   },
+  "scripts": {
+    "test": "phpunit"
+  },
   "extra": {
     "laravel": {
       "providers": [
@@ -45,6 +49,9 @@
         "Share": "Siberfx\\Share\\Facade\\Share"
       }
     }
+  },
+  "config": {
+    "sort-packages": true
   },
   "minimum-stability": "stable",
   "prefer-stable": true

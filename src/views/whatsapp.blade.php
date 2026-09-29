@@ -1,1 +1,1 @@
-whatsapp://send?text={{ rawurlencode("$title $url") }}
+whatsapp://send?text={{ rawurlencode(trim(($title ?? '').' '.($url ?? ''))) }}

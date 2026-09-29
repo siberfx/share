@@ -13,11 +13,6 @@
             <directory suffix="Test.php">./tests/</directory>
         </testsuite>
     </testsuites>
-    <groups>
-        <exclude>
-            <group>live</group>
-        </exclude>
-    </groups>
     <source>
         <include>
             <directory suffix=".php">./src/</directory>

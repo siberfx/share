@@ -1,79 +1,166 @@
-<?php namespace Siberfx\Share;
+<?php
 
-use Illuminate\Support\Arr;
+declare(strict_types=1);
+
+namespace Siberfx\Share;
+
+use BadMethodCallException;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Facades\View;
 
-class Share {
-    protected $app;
+class Share
+{
+    /**
+     * Variables a service may expose to its URL via the `only` option.
+     */
+    protected const array SHAREABLE = ['url', 'title', 'media'];
 
-    protected $url;
-    protected $title;
-    protected $media;
+    protected string $url = '';
 
-    public function __construct($app){
-        $this->app = $app;
+    protected string $title = '';
+
+    protected string $media = '';
+
+    public function __construct(protected Container $app)
+    {
     }
 
-    public function load($url, $title = '', $media = ''){
-        $this->url = $url;
-        $this->title = $title;
-        $this->media = $media;
+    /**
+     * Set the link, title and media that will be shared.
+     */
+    public function load(?string $url, ?string $title = '', ?string $media = ''): static
+    {
+        $this->url = (string) $url;
+        $this->title = (string) $title;
+        $this->media = (string) $media;
+
         return $this;
     }
 
-    public function services() {
-        $services = func_get_args();
-
-        if (empty($services)) {
-            $services = array_keys($this->app->config->get('social-share.services'));
-        } elseif (is_array($services[0])) {
-            $services = $services[0];
-        }
-
-        $object = false;
-        if (end($services) === true)
-        {
-            $object = true;
+    /**
+     * Generate links for several services at once.
+     *
+     * Accepts service names as variadic arguments or as a single array. Pass
+     * `true` as the last argument to receive an object instead of an array.
+     * With no services given, links for every configured service are returned.
+     *
+     * @return array<string, string>|object
+     */
+    public function services(mixed ...$services): array|object
+    {
+        $asObject = false;
+        if ($services !== [] && end($services) === true) {
+            $asObject = true;
             array_pop($services);
         }
 
-        $return = array();
-
-        if ($services){
-            foreach ($services as $service){
-                $return[$service] = $this->$service();
-            }
+        if (isset($services[0]) && is_array($services[0])) {
+            $services = $services[0];
         }
 
-        if ($object)
-        {
-            return (object) $return;
+        if ($services === []) {
+            $services = array_keys($this->config('social-share.services', []));
         }
 
-        return $return;
+        $links = [];
+        foreach ($services as $service) {
+            $links[$service] = $this->generateUrl($service);
+        }
+
+        return $asObject ? (object) $links : $links;
     }
 
-    protected function generateUrl($serviceId) {
-        $vars = [
-            'service' => $this->app->config->get("social-share.services.$serviceId", []),
-            'sep' => $this->app->config->get('social-share.separator', '&'),
-        ];
-
-        if (empty($vars['service']['only'])) {
-            $only = [ 'url', 'title', 'media' ];
-        } else {
-            $only = $vars['service']['only'];
-        }
-
-        foreach ($only as $varName) {
-            $vars[$varName] = $this->$varName;
-        }
-
-        $view = Arr::get($vars['service'], 'view', 'social-share::default');
-        return trim(View::make($view, $vars)->render());
+    /**
+     * Determine whether a service is configured.
+     */
+    public function has(string $service): bool
+    {
+        return is_array($this->config("social-share.services.$service"));
     }
 
-    public function __call($name, $arguments)
+    /**
+     * Generate the share link for a single service.
+     *
+     * @throws BadMethodCallException when the service is not configured.
+     */
+    public function generateUrl(string $serviceId): string
+    {
+        if (! $this->has($serviceId)) {
+            throw new BadMethodCallException(sprintf(
+                'Share service [%s] is not defined in the social-share.services config.', $serviceId
+            ));
+        }
+
+        $service = $this->config("social-share.services.$serviceId");
+        $separator = (string) $this->config('social-share.separator', '&');
+
+        $only = empty($service['only'])
+            ? self::SHAREABLE
+            : array_intersect((array) $service['only'], self::SHAREABLE);
+
+        $values = [];
+        foreach (self::SHAREABLE as $name) {
+            $values[$name] = in_array($name, $only, true) ? $this->$name : '';
+        }
+
+        if (! empty($service['view'])) {
+            $vars = ['service' => $service, 'sep' => $separator] + array_intersect_key($values, array_flip($only));
+
+            return trim(View::make($service['view'], $vars)->render());
+        }
+
+        return $this->buildUrl($service, $values, $separator);
+    }
+
+    /**
+     * Build a query-string based share link from a service definition.
+     *
+     * @param  array<string, mixed>  $service
+     * @param  array<string, string>  $values
+     */
+    protected function buildUrl(array $service, array $values, string $separator): string
+    {
+        $params = [];
+
+        if ($values['url'] !== '') {
+            $params[] = ($service['urlName'] ?? 'url').'='.rawurlencode($values['url']);
+        }
+
+        if ($values['title'] !== '') {
+            $params[] = ($service['titleName'] ?? 'title').'='.rawurlencode($values['title']);
+        }
+
+        if (isset($service['mediaName']) && $values['media'] !== '') {
+            $params[] = $service['mediaName'].'='.rawurlencode($values['media']);
+        }
+
+        if (! empty($service['extra'])) {
+            $params[] = http_build_query($service['extra'], '', $separator, PHP_QUERY_RFC3986);
+        }
+
+        $uri = (string) ($service['uri'] ?? '');
+        $query = implode($separator, $params);
+
+        if ($query === '') {
+            return $uri;
+        }
+
+        $glue = ! str_contains($uri, '?') ? '?' : (str_ends_with($uri, '?') ? '' : $separator);
+
+        return $uri.$glue.$query;
+    }
+
+    protected function config(string $key, mixed $default = null): mixed
+    {
+        return $this->app->make('config')->get($key, $default);
+    }
+
+    /**
+     * Dynamically generate a link for the service named after the method.
+     *
+     * @param  array<int, mixed>  $arguments
+     */
+    public function __call(string $name, array $arguments): string
     {
         return $this->generateUrl($name);
     }
